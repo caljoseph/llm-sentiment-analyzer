@@ -61,13 +61,13 @@ class ModelManager:
     async def generate_sentiment_rating(self, 
                                         review_text: str, 
                                         system_prompt: str,
-                                        user_prompt_template: str,
+                                        user_prompt: str,
                                         temperature: float = 1.0,
                                         max_tokens: int = 50,
                                         logprobs: bool = True,
                                         top_logprobs: int = 20) -> ModelResponse:
         
-        user_prompt = user_prompt_template.format(review=review_text)
+        user_prompt = user_prompt.format(review=review_text)
         
         messages = [
             {"role": "system", "content": system_prompt},

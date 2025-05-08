@@ -23,14 +23,16 @@ async def evaluate_dataset_command(args: argparse.Namespace) -> None:
         model_kwargs=model_kwargs
     )
     
-    # Create the evaluator with custom prompts if provided
-    system_prompt = args.system_prompt
-    user_prompt_template = args.user_prompt
+    # Create the evaluator with custom prompts only if provided
+    evaluator_kwargs = {}
+    if args.system_prompt is not None:
+        evaluator_kwargs['system_prompt'] = args.system_prompt
+    if args.user_prompt is not None:
+        evaluator_kwargs['user_prompt'] = args.user_prompt
     
     evaluator = Evaluator(
         model_manager=model_manager,
-        system_prompt=system_prompt,
-        user_prompt_template=user_prompt_template
+        **evaluator_kwargs
     )
     
     # Run the evaluation
@@ -71,14 +73,16 @@ async def evaluate_single_command(args: argparse.Namespace) -> None:
         model_kwargs=model_kwargs
     )
     
-    # Create the evaluator with custom prompts if provided
-    system_prompt = args.system_prompt
-    user_prompt_template = args.user_prompt
+    # Create the evaluator with custom prompts only if provided
+    evaluator_kwargs = {}
+    if args.system_prompt is not None:
+        evaluator_kwargs['system_prompt'] = args.system_prompt
+    if args.user_prompt is not None:
+        evaluator_kwargs['user_prompt'] = args.user_prompt
     
     evaluator = Evaluator(
         model_manager=model_manager,
-        system_prompt=system_prompt,
-        user_prompt_template=user_prompt_template
+        **evaluator_kwargs
     )
     
     # Run the evaluation
@@ -124,8 +128,8 @@ def main():
     dataset_parser.add_argument("--review-column", default="review", help="Name of the review column in the dataset")
     dataset_parser.add_argument("--rating-column", default="rating", help="Name of the rating column in the dataset")
     dataset_parser.add_argument("--batch-size", type=int, default=10, help="Batch size for evaluation")
-    dataset_parser.add_argument("--system-prompt", default="You are an assistant that rates Amazon product reviews on a scale of 1-5 stars based on the sentiment expressed.", help="System prompt for the model")
-    dataset_parser.add_argument("--user-prompt", default="Please analyze the following Amazon product review and rate it on a scale from 1 to 5 stars, where 1 is the most negative and 5 is the most positive. Provide ONLY the numerical rating (1, 2, 3, 4, or 5) without any explanation.\n\nReview: {review}", help="User prompt template for the model")
+    dataset_parser.add_argument("--system-prompt", help="System prompt for the model")
+    dataset_parser.add_argument("--user-prompt", help="User prompt template for the model")
     dataset_parser.add_argument("--temperature", type=float, help="Temperature for model generation")
     dataset_parser.add_argument("--max-tokens", type=int, help="Maximum tokens for model generation")
     dataset_parser.add_argument("--output-dir", default="results", help="Output directory for results")
@@ -136,8 +140,8 @@ def main():
     single_parser.add_argument("--model", required=True, help="Model name to use for evaluation")
     single_parser.add_argument("--api-base", help="API base URL for local models")
     single_parser.add_argument("--actual-rating", type=int, choices=[1, 2, 3, 4, 5], help="Actual rating for comparison")
-    single_parser.add_argument("--system-prompt", default="You are an assistant that rates Amazon product reviews on a scale of 1-5 stars based on the sentiment expressed.", help="System prompt for the model")
-    single_parser.add_argument("--user-prompt", default="Please analyze the following Amazon product review and rate it on a scale from 1 to 5 stars, where 1 is the most negative and 5 is the most positive. Provide ONLY the numerical rating (1, 2, 3, 4, or 5) without any explanation.\n\nReview: {review}", help="User prompt template for the model")
+    single_parser.add_argument("--system-prompt", help="System prompt for the model")
+    single_parser.add_argument("--user-prompt", help="User prompt template for the model")
     single_parser.add_argument("--temperature", type=float, help="Temperature for model generation")
     single_parser.add_argument("--max-tokens", type=int, help="Maximum tokens for model generation")
     single_parser.add_argument("--verbose", action="store_true", help="Print verbose output")

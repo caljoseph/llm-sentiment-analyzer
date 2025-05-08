@@ -4,7 +4,6 @@ from llm_sentiment.evaluator import Evaluator
 from llm_sentiment.results_manager import ResultsManager
 from llm_sentiment.main import (
     evaluate_dataset,
-    batch_evaluate,
     evaluate_single,
 )
 
