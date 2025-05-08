@@ -1,0 +1,48 @@
+**/.claude/settings.local.json
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Results directory
+results/
+
+# IDE files
+.idea/
+.vscode/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# AI cli tools
+.claude
+CLAUDE.md
