@@ -85,9 +85,10 @@ async def evaluate_dataset(
 
 
 async def evaluate_single(
-        content: str,
         model_name: str,
-        label: str,
+        content: Optional[str] = None,
+        content_path: Optional[str] = None,
+        label: Optional[str] = None,
         api_base: Optional[str] = None,
         system_prompt: Optional[str] = None,
         user_prompt: Optional[str] = None,
@@ -97,10 +98,11 @@ async def evaluate_single(
 ) -> Dict[str, Any]:
     """
     Evaluate a single content item against a language model
-    
+
     Args:
-        content: The content to evaluate
         model_name: Name of the model to use
+        content: The text content to evaluate (mutually exclusive with content_path)
+        content_path: Path to an image file to evaluate (mutually exclusive with content)
         label: Optional actual label/rating for comparison
         api_base: Optional API base URL for the model
         system_prompt: Optional custom system prompt
@@ -108,7 +110,7 @@ async def evaluate_single(
         temperature: Model temperature parameter
         max_tokens: Maximum tokens for model output
         model_kwargs: Additional model parameters
-        
+
     Returns:
         Dictionary with evaluation results
     """
@@ -136,6 +138,7 @@ async def evaluate_single(
 
     result = await evaluator.evaluate_single(
         content=content,
+        content_path=content_path,
         label=label
     )
 

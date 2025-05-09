@@ -1,1 +1,1 @@
-from llm_sentiment.model_manager.model_manager import ModelManager, ModelResponse, ModelTooLargeError
+from llm_sentiment.model_manager.model_manager import ModelManager, ModelResponse, ModelTooLargeError, ModelDoesNotSupportVisionError, encode_image_file

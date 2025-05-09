@@ -19,31 +19,45 @@ class Evaluator:
         self.system_prompt = system_prompt
         self.user_prompt = user_prompt
         
-    async def evaluate_single(self, content: str, label: Optional[int] = None) -> Dict[str, Any]:
+    async def evaluate_single(self, content: Optional[str] = None, content_path: Optional[str] = None, label: Optional[int] = None) -> Dict[str, Any]:
         """
         Evaluate a single content item
-        
+
         Args:
-            content: The content to evaluate
+            content: The text content to evaluate (mutually exclusive with content_path)
+            content_path: Path to an image file to evaluate (mutually exclusive with content)
             label: Optional actual label/rating for comparison
-            
+
         Returns:
             Dictionary with evaluation results
         """
         response = await self.model_manager.generate_sentiment_rating(
             content=content,
+            content_path=content_path,
             system_prompt=self.system_prompt,
             user_prompt=self.user_prompt
         )
         
+        # Construct the formatted user prompt based on what was provided
+        formatted_user_prompt = ""
+        if content is not None:
+            formatted_user_prompt = self.user_prompt.format(content=content)
+        else:
+            formatted_user_prompt = self.user_prompt.format(content="")
+
         result = {
-            'content': content,
             'system_prompt': self.system_prompt,
-            'user_prompt': self.user_prompt.format(content=content),
+            'user_prompt': formatted_user_prompt,
             'raw_model_output': response.raw_output.choices[0].message.content if hasattr(response.raw_output, 'choices') else str(response.raw_output),
             'pred_label': response.extracted_label,
             'logprobs': response.logprobs,
         }
+
+        # Include the appropriate content in the result
+        if content is not None:
+            result['content'] = content
+        else:
+            result['content_path'] = content_path
         
         if label is not None:
             result['label'] = label

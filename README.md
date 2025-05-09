@@ -1,4 +1,7 @@
 # LLM Sentiment Analyzer
+
+A library for evaluating LLM performance on sentiment analysis tasks with support for both text and image inputs.
+
 ## 🚀 Getting Started
 
 ### Installation
@@ -23,9 +26,10 @@ export ANTHROPIC_API_KEY=your-api-key
 
 ### Evaluate a single example
 
+#### Text Content
+
 ```python
 from llm_sentiment import evaluate_single
-
 import asyncio
 
 async def run_evaluation():
@@ -39,6 +43,28 @@ async def run_evaluation():
 asyncio.run(run_evaluation())
 ```
 
+#### Image Content
+
+```python
+from llm_sentiment import evaluate_single
+import asyncio
+
+async def run_image_evaluation():
+    # Use a vision-capable model for image evaluation
+    result = await evaluate_single(
+        content_path="data/positive_meme.webp",
+        label=5,
+        model_name="claude-3-7-sonnet-latest",
+        system_prompt="You are an assistant that rates Internet memes on a scale of 1-5 based on how positive they are.",
+        user_prompt="Please analyze this meme and rate it on a scale from 1 to 5 based on positivity. Provide ONLY the numerical rating."
+    )
+    print(f"Predicted Label: {result['pred_label']}")
+    print(f"Actual Label: {result['label']}")
+    print(f"Is Correct: {result['is_correct']}")
+
+asyncio.run(run_image_evaluation())
+```
+
 ### Evaluate a dataset
 
 ```python
@@ -47,9 +73,9 @@ from llm_sentiment import evaluate_dataset
 
 async def run_evaluation():
     results = await evaluate_dataset(
-        dataset_path="data/sample_memes.csv",
+        dataset_path="data/sample_ratings.csv",
         model_name="gpt-4o",
-        content_column="meme",
+        content_column="review",
         label_column="rating",
         batch_size=2,
         output_dir="results",
@@ -83,11 +109,19 @@ python -m llm_sentiment.cli.main dataset \
 Analyze a single content item:
 
 ```bash
-# Analyze a single piece of content
+# Analyze a single text content
 python -m llm_sentiment.cli.main single \
   --content "This product is amazing!" \
   --model gpt-3.5-turbo \
   --label 5
+
+# Analyze an image file (requires a vision-capable model)
+python -m llm_sentiment.cli.main single \
+  --content-path "data/positive_meme.webp" \
+  --model claude-3-7-sonnet-latest \
+  --label 5 \
+  --system-prompt "You are an assistant that rates Internet memes on a scale of 1-5 based on positivity." \
+  --user-prompt "Please analyze this meme and rate it on a scale from 1 to 5. Provide ONLY the numerical rating."
 ```
 
 ## 📝 Working with Different Content Types
@@ -230,7 +264,8 @@ The evaluation results include these key metrics:
 - `within_1_accuracy`: How often the model was within 1 star of correct (e.g., predicting 4 when actual is 5)
 
 Each result contains:
-- `content`: The content that was evaluated
+- `content`: The text content that was evaluated (for text inputs)
+- `content_path`: The path to the image file that was evaluated (for image inputs)
 - `label`: The actual label/rating (if provided)
 - `pred_label`: The predicted label from the model
 - `is_correct`: Whether the prediction matches the actual label
@@ -242,7 +277,7 @@ Results are saved to the `results/` directory by default with:
 
 ## 💡 Component Overview
 
-- **ModelManager**: Handles interactions with language models (via LiteLLM)
+- **ModelManager**: Handles interactions with language models (via LiteLLM), including image processing for vision models
 - **DataProcessor**: Loads and processes datasets with flexible column mapping
 - **Evaluator**: Runs evaluations and calculates accuracy metrics
 - **ResultsManager**: Saves and organizes results
@@ -255,3 +290,13 @@ The library supports:
 - Anthropic models: `anthropic/claude-3-haiku-20240307`, `anthropic/claude-3-5-sonnet-20240620`, etc.
 - Other providers such as Google, X, and Huggingface (provided you have a valid key to your environment)
 - Local models via vLLM: Any model loaded in vLLM with OpenAI API compatibility
+
+### Vision Models
+
+For image inputs, you need to use a vision-capable model such as:
+
+- `claude-3-7-sonnet-latest`
+- `claude-3-7-opus-latest`
+- `gpt-4o`
+
+The library automatically checks if a model supports vision capabilities when using image inputs.
