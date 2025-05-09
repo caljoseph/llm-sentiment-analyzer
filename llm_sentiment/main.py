@@ -10,8 +10,8 @@ async def evaluate_dataset(
         dataset_path: str,
         model_name: str,
         api_base: Optional[str] = None,
-        review_column: str = "review",
-        rating_column: str = "rating",
+        content_column: str = "review",
+        label_column: str = "rating",
         batch_size: int = 10,
         system_prompt: Optional[str] = None,
         user_prompt: Optional[str] = None,
@@ -21,7 +21,24 @@ async def evaluate_dataset(
         **model_kwargs
 ) -> Dict[str, Any]:
     """
-    Evaluate a dataset of reviews against a language model
+    Evaluate a dataset of content items against a language model
+    
+    Args:
+        dataset_path: Path to the dataset file
+        model_name: Name of the model to use
+        api_base: Optional API base URL for the model
+        content_column: Name of the column containing content to evaluate (default: 'review')
+        label_column: Name of the column containing labels/ratings (default: 'rating')
+        batch_size: Number of items to process in each batch
+        system_prompt: Optional custom system prompt
+        user_prompt: Optional custom user prompt
+        temperature: Model temperature parameter
+        max_tokens: Maximum tokens for model output
+        output_dir: Directory to save results
+        model_kwargs: Additional model parameters
+        
+    Returns:
+        Dictionary with results, metrics, and output path
     """
     model_kwargs.update({
         'temperature': temperature,
@@ -47,8 +64,8 @@ async def evaluate_dataset(
 
     results, metrics = await evaluator.evaluate_dataset(
         dataset_path=dataset_path,
-        review_column=review_column,
-        rating_column=rating_column,
+        content_column=content_column,
+        label_column=label_column,
         batch_size=batch_size
     )
 
@@ -68,9 +85,9 @@ async def evaluate_dataset(
 
 
 async def evaluate_single(
-        review_text: str,
+        content: str,
         model_name: str,
-        actual_rating: Optional[int] = None,
+        label: Optional[int] = None,
         api_base: Optional[str] = None,
         system_prompt: Optional[str] = None,
         user_prompt: Optional[str] = None,
@@ -79,7 +96,21 @@ async def evaluate_single(
         **model_kwargs
 ) -> Dict[str, Any]:
     """
-    Evaluate a single review against a language model
+    Evaluate a single content item against a language model
+    
+    Args:
+        content: The content to evaluate
+        model_name: Name of the model to use
+        label: Optional actual label/rating for comparison
+        api_base: Optional API base URL for the model
+        system_prompt: Optional custom system prompt
+        user_prompt: Optional custom user prompt
+        temperature: Model temperature parameter
+        max_tokens: Maximum tokens for model output
+        model_kwargs: Additional model parameters
+        
+    Returns:
+        Dictionary with evaluation results
     """
     model_kwargs.update({
         'temperature': temperature,
@@ -104,8 +135,8 @@ async def evaluate_single(
     )
 
     result = await evaluator.evaluate_single(
-        review_text=review_text,
-        actual_rating=actual_rating
+        content=content,
+        label=label
     )
 
     return result

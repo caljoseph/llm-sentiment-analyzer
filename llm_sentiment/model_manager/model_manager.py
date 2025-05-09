@@ -12,7 +12,7 @@ class ModelTooLargeError(Exception):
 
 class ModelResponse(BaseModel):
     raw_output: Any
-    extracted_rating: Optional[int] = None
+    extracted_label: Optional[int] = None
     logprobs: Optional[Dict[str, Any]] = None
 
 
@@ -23,8 +23,8 @@ class ModelManager:
         self.api_base = api_base
         self.model_kwargs = model_kwargs or {}
 
-    def _extract_rating_from_output(self, output: str) -> int:
-        # Look for a rating 1-5 in the output
+    def _extract_label_from_output(self, output: str) -> int:
+        # Look for a label 1-5 in the output
         for char in output:
             if char in "12345":
                 return int(char)
@@ -59,7 +59,7 @@ class ModelManager:
             return None
 
     async def generate_sentiment_rating(self, 
-                                        review_text: str, 
+                                        content: str, 
                                         system_prompt: str,
                                         user_prompt: str,
                                         temperature: float = 1.0,
@@ -67,7 +67,7 @@ class ModelManager:
                                         logprobs: bool = True,
                                         top_logprobs: int = 20) -> ModelResponse:
         
-        user_prompt = user_prompt.format(review=review_text)
+        user_prompt = user_prompt.format(content=content)
         
         messages = [
             {"role": "system", "content": system_prompt},
@@ -93,7 +93,7 @@ class ModelManager:
             
             return ModelResponse(
                 raw_output=response,
-                extracted_rating=self._extract_rating_from_output(output_text),
+                extracted_label=self._extract_label_from_output(output_text),
                 logprobs=self._extract_logprobs(response)
             )
         except Exception as e:

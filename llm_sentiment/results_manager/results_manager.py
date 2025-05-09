@@ -43,9 +43,9 @@ class ResultsManager:
         summary_data = []
         for result in results:
             row = {
-                'review_text': result.get('review_text', ''),
-                'actual_rating': result.get('actual_rating', None),
-                'predicted_rating': result.get('predicted_rating', None),
+                'content': result.get('content', ''),
+                'label': result.get('label', None),
+                'pred_label': result.get('pred_label', None),
                 'is_correct': result.get('is_correct', None)
             }
             summary_data.append(row)

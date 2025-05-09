@@ -13,50 +13,50 @@ class Evaluator:
         self,
         model_manager: ModelManager,
         system_prompt: str = "You are an assistant that rates Amazon product reviews on a scale of 1-5 stars based on the sentiment expressed.",
-        user_prompt: str = "Please analyze the following Amazon product review and rate it on a scale from 1 to 5 stars, where 1 is the most negative and 5 is the most positive. Provide ONLY the numerical rating (1, 2, 3, 4, or 5) without any explanation.\n\nReview: {review}"
+        user_prompt: str = "Please analyze the following Amazon product review and rate it on a scale from 1 to 5 stars, where 1 is the most negative and 5 is the most positive. Provide ONLY the numerical rating (1, 2, 3, 4, or 5) without any explanation.\n\nReview: {content}"
     ):
         self.model_manager = model_manager
         self.system_prompt = system_prompt
         self.user_prompt = user_prompt
         
-    async def evaluate_single(self, review_text: str, actual_rating: Optional[int] = None) -> Dict[str, Any]:
+    async def evaluate_single(self, content: str, label: Optional[int] = None) -> Dict[str, Any]:
         """
-        Evaluate a single review text
+        Evaluate a single content item
         
         Args:
-            review_text: The review text to evaluate
-            actual_rating: Optional actual rating for comparison
+            content: The content to evaluate
+            label: Optional actual label/rating for comparison
             
         Returns:
             Dictionary with evaluation results
         """
         response = await self.model_manager.generate_sentiment_rating(
-            review_text=review_text,
+            content=content,
             system_prompt=self.system_prompt,
             user_prompt=self.user_prompt
         )
         
         result = {
-            'review_text': review_text,
+            'content': content,
             'system_prompt': self.system_prompt,
-            'user_prompt': self.user_prompt.format(review=review_text),
+            'user_prompt': self.user_prompt.format(content=content),
             'raw_model_output': response.raw_output.choices[0].message.content if hasattr(response.raw_output, 'choices') else str(response.raw_output),
-            'predicted_rating': response.extracted_rating,
+            'pred_label': response.extracted_label,
             'logprobs': response.logprobs,
         }
         
-        if actual_rating is not None:
-            result['actual_rating'] = actual_rating
-            result['is_correct'] = (response.extracted_rating == actual_rating)
+        if label is not None:
+            result['label'] = label
+            result['is_correct'] = (response.extracted_label == label)
             
         return result
 
     async def evaluate_batch(self, batch: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Evaluate a batch of reviews
+        Evaluate a batch of content items
 
         Args:
-            batch: List of review records with text and actual ratings
+            batch: List of content records with content and labels
 
         Returns:
             List of evaluation results
@@ -64,8 +64,8 @@ class Evaluator:
         tasks = []
         for record in batch:
             task = self.evaluate_single(
-                review_text=record['review_text'],
-                actual_rating=record['actual_rating']
+                content=record['content'],
+                label=record['label']
             )
             tasks.append(task)
 
@@ -74,8 +74,8 @@ class Evaluator:
     async def evaluate_dataset(
         self,
         dataset_path: str,
-        review_column: str = 'review',
-        rating_column: str = 'rating',
+        content_column: str = 'review',
+        label_column: str = 'rating',
         batch_size: int = 10
     ) -> Tuple[List[Dict[str, Any]], Dict[str, float]]:
         """
@@ -83,8 +83,8 @@ class Evaluator:
         
         Args:
             dataset_path: Path to the dataset
-            review_column: Name of the column containing review text
-            rating_column: Name of the column containing actual ratings
+            content_column: Name of the column containing content (default: 'review')
+            label_column: Name of the column containing labels/ratings (default: 'rating')
             batch_size: Size of batches for processing
             
         Returns:
@@ -94,7 +94,7 @@ class Evaluator:
         dataset = data_processor.load_dataset(dataset_path)
         
         all_results = []
-        for batch in tqdm(data_processor.get_batches(dataset, review_column, rating_column)):
+        for batch in tqdm(data_processor.get_batches(dataset, content_column, label_column)):
             batch_results = await self.evaluate_batch(batch)
             all_results.extend(batch_results)
             
@@ -113,8 +113,8 @@ class Evaluator:
         Returns:
             Dictionary of metric names and values
         """
-        y_true = [r['actual_rating'] for r in results if 'actual_rating' in r]
-        y_pred = [r['predicted_rating'] for r in results if 'actual_rating' in r]
+        y_true = [r['label'] for r in results if 'label' in r]
+        y_pred = [r['pred_label'] for r in results if 'label' in r]
         
         if not y_true or not y_pred:
             return {}

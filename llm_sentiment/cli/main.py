@@ -38,8 +38,8 @@ async def evaluate_dataset_command(args: argparse.Namespace) -> None:
     # Run the evaluation
     results, metrics = await evaluator.evaluate_dataset(
         dataset_path=args.dataset,
-        review_column=args.review_column,
-        rating_column=args.rating_column,
+        content_column=args.content_column,
+        label_column=args.label_column,
         batch_size=args.batch_size
     )
     
@@ -55,7 +55,7 @@ async def evaluate_dataset_command(args: argparse.Namespace) -> None:
     print(f"\nEvaluation complete. Results saved to: {output_path}")
     print("\nMetrics Summary:")
     for metric, value in metrics.items():
-        if metric in ['accuracy', 'mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']:
+        if metric in ['mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']:
             print(f"  {metric}: {value:.4f}")
 
 
@@ -86,19 +86,19 @@ async def evaluate_single_command(args: argparse.Namespace) -> None:
     )
     
     # Run the evaluation
-    actual_rating = int(args.actual_rating) if args.actual_rating is not None else None
+    label = int(args.label) if args.label is not None else None
     result = await evaluator.evaluate_single(
-        review_text=args.review_text,
-        actual_rating=actual_rating
+        content=args.content,
+        label=label
     )
     
     # Print the result
     print("\nEvaluation Result:")
-    print(f"Review: {result['review_text']}")
-    print(f"Predicted Rating: {result['predicted_rating']}")
+    print(f"Content: {result['content']}")
+    print(f"Predicted Label: {result['pred_label']}")
     
-    if actual_rating is not None:
-        print(f"Actual Rating: {result['actual_rating']}")
+    if label is not None:
+        print(f"Actual Label: {result['label']}")
         print(f"Is Correct: {result['is_correct']}")
     
     if args.verbose:
@@ -121,12 +121,12 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
     
     # Dataset evaluation command
-    dataset_parser = subparsers.add_parser("dataset", help="Evaluate a dataset of reviews")
+    dataset_parser = subparsers.add_parser("dataset", help="Evaluate a dataset of content items")
     dataset_parser.add_argument("--dataset", required=True, help="Path to the dataset file")
     dataset_parser.add_argument("--model", required=True, help="Model name to use for evaluation")
     dataset_parser.add_argument("--api-base", help="API base URL for local models")
-    dataset_parser.add_argument("--review-column", default="review", help="Name of the review column in the dataset")
-    dataset_parser.add_argument("--rating-column", default="rating", help="Name of the rating column in the dataset")
+    dataset_parser.add_argument("--content-column", default="review", help="Name of the column containing content to evaluate (default: 'review')")
+    dataset_parser.add_argument("--label-column", default="rating", help="Name of the column containing labels/ratings (default: 'rating')")
     dataset_parser.add_argument("--batch-size", type=int, default=10, help="Batch size for evaluation")
     dataset_parser.add_argument("--system-prompt", help="System prompt for the model")
     dataset_parser.add_argument("--user-prompt", help="User prompt template for the model")
@@ -134,12 +134,12 @@ def main():
     dataset_parser.add_argument("--max-tokens", type=int, help="Maximum tokens for model generation")
     dataset_parser.add_argument("--output-dir", default="results", help="Output directory for results")
     
-    # Single review evaluation command
-    single_parser = subparsers.add_parser("single", help="Evaluate a single review")
-    single_parser.add_argument("--review-text", required=True, help="Review text to evaluate")
+    # Single content evaluation command
+    single_parser = subparsers.add_parser("single", help="Evaluate a single content item")
+    single_parser.add_argument("--content", required=True, help="Content to evaluate")
     single_parser.add_argument("--model", required=True, help="Model name to use for evaluation")
     single_parser.add_argument("--api-base", help="API base URL for local models")
-    single_parser.add_argument("--actual-rating", type=int, choices=[1, 2, 3, 4, 5], help="Actual rating for comparison")
+    single_parser.add_argument("--label", type=int, choices=[1, 2, 3, 4, 5], help="Actual label/rating for comparison")
     single_parser.add_argument("--system-prompt", help="System prompt for the model")
     single_parser.add_argument("--user-prompt", help="User prompt template for the model")
     single_parser.add_argument("--temperature", type=float, help="Temperature for model generation")

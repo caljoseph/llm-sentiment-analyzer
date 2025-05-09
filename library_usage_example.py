@@ -46,7 +46,7 @@ async def evaluate_multiple_models():
         # Print metrics
         print(f"\nResults for {model}:")
         for metric, value in results['metrics'].items():
-            if metric in ['accuracy', 'mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']:
+            if metric in ['mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']:
                 print(f"  {metric}: {value:.4f}")
 
     # Compare models side by side
@@ -55,7 +55,7 @@ async def evaluate_multiple_models():
     print("=" * 80)
 
     # Create comparison dataframe
-    metrics_to_compare = ['accuracy', 'mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']
+    metrics_to_compare = ['mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']
     comparison_data = {}
 
     for model in models:

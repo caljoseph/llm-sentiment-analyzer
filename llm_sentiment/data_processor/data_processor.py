@@ -30,34 +30,34 @@ class DataProcessor:
         else:
             raise ValueError(f"Unsupported file format: {file_ext}")
     
-    def preprocess_review(self, review_text: str) -> str:
+    def preprocess_content(self, content: str) -> str:
         """
-        Preprocess a single review text
+        Preprocess a single content item
         
         Args:
-            review_text: The review text to preprocess
+            content: The content to preprocess
             
         Returns:
-            Preprocessed review text
+            Preprocessed content
         """
         # Basic preprocessing
-        return review_text.strip()
+        return content.strip()
     
     def get_batches(self, 
                     dataset: pd.DataFrame, 
-                    review_column: str = 'review', 
-                    rating_column: str = 'rating'
+                    content_column: str = 'review', 
+                    label_column: str = 'rating'
                    ) -> Iterator[List[Dict[str, Any]]]:
         """
         Split the dataset into batches for processing
         
         Args:
             dataset: DataFrame containing the dataset
-            review_column: Name of the column containing review text
-            rating_column: Name of the column containing actual ratings
+            content_column: Name of the column containing content (default: 'review')
+            label_column: Name of the column containing actual labels/ratings (default: 'rating')
             
         Yields:
-            Batches of reviews with their metadata
+            Batches of content with their metadata
         """
         total_samples = len(dataset)
         
@@ -66,20 +66,20 @@ class DataProcessor:
             batch_data = []
             
             for _, row in batch.iterrows():
-                # Ensure the review text is a string
-                review_text = str(row[review_column])
+                # Ensure the content is a string
+                content = str(row[content_column])
                 
-                # Preprocess the review
-                processed_review = self.preprocess_review(review_text)
+                # Preprocess the content
+                processed_content = self.preprocess_content(content)
                 
-                # Create a record with review and ground truth
+                # Create a record with content and ground truth label
                 record = {
-                    'review_text': processed_review,
-                    'actual_rating': int(row[rating_column]),
+                    'content': processed_content,
+                    'label': int(row[label_column]),
                     # Include additional metadata from the row
                     'metadata': {
                         col: row[col] for col in row.index 
-                        if col not in [review_column, rating_column]
+                        if col not in [content_column, label_column]
                     }
                 }
                 batch_data.append(record)
