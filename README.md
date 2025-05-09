@@ -31,7 +31,7 @@ import asyncio
 async def run_evaluation():
     result = await evaluate_single(
         content="This product is amazing! I absolutely love it.",
-        label="5",
+        label=5,
         model_name="gpt-3.5-turbo"
     )
     print(f"Predicted Label: {result['pred_label']}")
@@ -87,7 +87,7 @@ Analyze a single content item:
 python -m llm_sentiment.cli.main single \
   --content "This product is amazing!" \
   --model gpt-3.5-turbo \
-  --label 5  # Optional: provide the actual rating for comparison
+  --label 5
 ```
 
 ## 📝 Working with Different Content Types
