@@ -13,6 +13,8 @@ async def evaluate_multiple_models():
         "anthropic/claude-3-5-sonnet-20240620"
         # The models used here depend on what API keys you have set in your environment
         # as well as what liteLLM supports
+        # For example you could run:
+        #"meta/llama-3-3B" via Huggingface's inference API if you have a Huggingface token set
         # Any local models run with vLLM will work because they conform to OpenAI API spec
     ]
 

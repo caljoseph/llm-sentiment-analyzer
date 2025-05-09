@@ -87,7 +87,7 @@ async def evaluate_dataset(
 async def evaluate_single(
         content: str,
         model_name: str,
-        label: Optional[int] = None,
+        label: str,
         api_base: Optional[str] = None,
         system_prompt: Optional[str] = None,
         user_prompt: Optional[str] = None,

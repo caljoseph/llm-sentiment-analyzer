@@ -1,13 +1,4 @@
 # LLM Sentiment Analyzer
-
-## 📋 What This Tool Does
-
-This tool helps answer questions like:
-- How accurate is GPT-3.5 at predicting sentiment ratings?
-- How does Claude compare to GPT-4 on sentiment analysis?
-- Is my local Llama model as good as cloud-based alternatives?
-- How well can models evaluate images, audio descriptions, or other non-review content?
-
 ## 🚀 Getting Started
 
 ### Installation
@@ -28,22 +19,45 @@ For Anthropic models (Claude):
 ```bash
 export ANTHROPIC_API_KEY=your-api-key
 ```
+## 🧑‍💻Programatic Usage
 
-### Quick Example
+### Evaluate a single example
 
 ```python
-# Evaluate a single content item
 from llm_sentiment import evaluate_single
 
-# Async version
 import asyncio
 
 async def run_evaluation():
     result = await evaluate_single(
         content="This product is amazing! I absolutely love it.",
+        label="5",
         model_name="gpt-3.5-turbo"
     )
     print(f"Predicted Label: {result['pred_label']}")
+
+asyncio.run(run_evaluation())
+```
+
+### Evaluate a dataset
+
+```python
+import asyncio
+from llm_sentiment import evaluate_dataset
+
+async def run_evaluation():
+    results = await evaluate_dataset(
+        dataset_path="data/sample_memes.csv",
+        model_name="gpt-4o",
+        content_column="meme",
+        label_column="rating",
+        batch_size=2,
+        output_dir="results",
+    )
+    
+    for metric, value in results['metrics'].items():
+        if metric in ['mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']:
+            print(f"  {metric}: {value:.4f}")
 
 asyncio.run(run_evaluation())
 ```
@@ -74,50 +88,6 @@ python -m llm_sentiment.cli.main single \
   --content "This product is amazing!" \
   --model gpt-3.5-turbo \
   --label 5  # Optional: provide the actual rating for comparison
-```
-
-## 📊 Comparing Multiple Models
-
-```bash
-python library_usage_example.py
-```
-
-This script gives an example of how you might compare several models on the same dataset and prompts
-
-```python
-import asyncio
-from llm_sentiment import evaluate_dataset
-
-async def evaluate_multiple_models():
-    # Define models to compare
-    models = [
-        "gpt-3.5-turbo",
-        "anthropic/claude-3-haiku-20240307",
-        "anthropic/claude-3-5-sonnet-20240620"
-    ]
-    
-    # Store results for comparison
-    all_results = {}
-    
-    # Run evaluations for each model
-    for model in models:
-        print(f"Evaluating model: {model}")
-        
-        # Run the evaluation
-        results = await evaluate_dataset(
-            dataset_path="data/sample_reviews.csv",
-            model_name=model,
-            batch_size=2,
-        )
-        
-        # Store results
-        all_results[model] = results
-        
-        # Print metrics
-        print(f"Results for {model}:")
-        for metric, value in results['metrics'].items():
-            if metric in ['mean_absolute_error', 'exact_match_rate', 'within_1_accuracy']:
-                print(f"  {metric}: {value:.4f}")
 ```
 
 ## 📝 Working with Different Content Types
